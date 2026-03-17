@@ -13,8 +13,12 @@ if [[ -t 1 ]]; then
   RED='\033[0;31m'
   YELLOW='\033[0;33m'
   NC='\033[0m'
+  PASS_MARK="${GREEN}✔ PASS${NC}"
+  FAIL_MARK="${RED}✘ FAIL${NC}"
 else
   GREEN='' RED='' YELLOW='' NC=''
+  PASS_MARK='✔ PASS'
+  FAIL_MARK='✘ FAIL'
 fi
 
 total=0
@@ -40,10 +44,10 @@ for test_file in "${SCRIPT_DIR}"/test-*.sh; do
   # Run each test file in a subshell with its own temp directory
   output=""
   if output="$(bash "$test_file" 2>&1)"; then
-    echo -e "${GREEN}PASS${NC}"
+    echo -e "${PASS_MARK}"
     passed=$((passed + 1))
   else
-    echo -e "${RED}FAIL${NC}"
+    echo -e "${FAIL_MARK}"
     failed=$((failed + 1))
     failed_tests+=("$test_name")
     # Print failure output indented
