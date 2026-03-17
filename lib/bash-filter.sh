@@ -14,8 +14,8 @@ is_mutating_command() {
   # Check for output redirects (but not /dev/null or stderr-only redirects)
   # Remove /dev/null redirects and stderr redirects before checking
   local sanitized
-  sanitized="$(echo "$cmd" | sed -E 's/[0-9]*>\s*\/dev\/null//g; s/[0-9]*>&[0-9]+//g')"
-  if echo "$sanitized" | grep -qP '(?<![0-9&])\s*>{1,2}\s'; then
+  sanitized="$(echo "$cmd" | sed -E 's/[0-9]*>[[:space:]]*\/dev\/null//g; s/[0-9]*>&[0-9]+//g')"
+  if echo "$sanitized" | perl -ne 'BEGIN{$f=1} $f=0 if /(?<![0-9&])\s*>{1,2}\s/; END{exit $f}'; then
     return 0
   fi
 
@@ -60,7 +60,7 @@ is_mutating_command() {
   )
 
   for pattern in "${mutating_patterns[@]}"; do
-    if echo "$cmd" | grep -qP "$pattern"; then
+    if echo "$cmd" | perl -ne 'BEGIN{$f=1} $f=0 if /'"$pattern"'/; END{exit $f}'; then
       return 0
     fi
   done
