@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
 # Stop hook for auto-worktree plugin.
-# Prints a summary of the worktree created during this session,
-# including the path, branch, and any uncommitted changes.
+# If Claude is in a worktree, prints a summary of branch and uncommitted changes.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
 
-source "${PLUGIN_ROOT}/lib/state.sh"
+source "${PLUGIN_ROOT}/lib/worktree.sh"
 
-# --- JSON Parsing ---
 parse_json_field() {
   local json="$1"
   local field="$2"
@@ -27,62 +25,39 @@ main() {
   local input
   input="$(cat)"
 
-  local session_id
-  session_id="$(parse_json_field "$input" '.session_id')"
+  local cwd
+  cwd="$(parse_json_field "$input" '.cwd')"
 
-  if [[ -z "$session_id" ]]; then
+  if [[ -z "$cwd" ]]; then
     exit 0
   fi
 
-  # Check if a worktree was created for this session
-  if ! state_exists "$session_id"; then
+  # Only show summary if we're in a worktree
+  if ! is_inside_worktree "$cwd"; then
     exit 0
   fi
 
-  local worktree_path branch_name
-  worktree_path="$(load_worktree_path "$session_id")"
-  branch_name="$(load_branch_name "$session_id")"
+  local worktree_root branch_name
+  worktree_root="$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)" || exit 0
+  branch_name="$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null)" || exit 0
 
-  if [[ -z "$worktree_path" || ! -d "$worktree_path" ]]; then
-    exit 0
-  fi
-
-  # Print session summary
   echo "" >&2
   echo "=== Auto-Worktree Session Summary ===" >&2
-  echo "  Worktree: ${worktree_path}" >&2
+  echo "  Worktree: ${worktree_root}" >&2
   echo "  Branch:   ${branch_name}" >&2
 
-  # Check for uncommitted changes
   local status_output
-  status_output="$(git -C "$worktree_path" status --porcelain 2>/dev/null)" || true
+  status_output="$(git -C "$worktree_root" status --porcelain 2>/dev/null)" || true
 
   if [[ -n "$status_output" ]]; then
     echo "" >&2
-    echo "  WARNING: Uncommitted changes in worktree:" >&2
+    echo "  Uncommitted changes:" >&2
     echo "$status_output" | while IFS= read -r line; do
       echo "    ${line}" >&2
     done
   fi
 
-  # Check for unpushed commits
-  local unpushed
-  unpushed="$(git -C "$worktree_path" log --oneline '@{upstream}..HEAD' 2>/dev/null)" || true
-
-  if [[ -n "$unpushed" ]]; then
-    echo "" >&2
-    echo "  Unpushed commits:" >&2
-    echo "$unpushed" | while IFS= read -r line; do
-      echo "    ${line}" >&2
-    done
-  fi
-
-  echo "" >&2
-  echo "  To continue working: cd ${worktree_path}" >&2
-  echo "  To clean up:         git worktree remove ${worktree_path}" >&2
   echo "======================================" >&2
-
-  # Always allow stopping
   exit 0
 }
 
