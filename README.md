@@ -77,23 +77,9 @@ The plugin uses a heuristic to distinguish read-only Bash commands (which are al
 
 ## Cleanup
 
-Remove old worktrees using the included utility:
+Worktree cleanup is handled by Claude Code's built-in `ExitWorktree` tool. When a session ends while in a worktree, the user is prompted to keep or remove it.
 
-```bash
-# List all plugin worktrees
-./cleanup.sh --list
-
-# Interactive removal
-./cleanup.sh
-
-# Remove only merged worktrees
-./cleanup.sh --merged
-
-# Remove all plugin worktrees
-./cleanup.sh --force
-```
-
-Or manually:
+For manual cleanup:
 
 ```bash
 git worktree list          # See all worktrees
@@ -120,7 +106,6 @@ claude-plugin-auto-worktree/
 │   ├── test-worktree.sh     # Worktree detection tests
 │   ├── test-pre-tool-use.sh # Integration tests
 │   └── test-stop.sh         # Stop hook tests
-├── cleanup.sh               # Worktree cleanup utility
 ├── LICENSE
 └── README.md
 ```
