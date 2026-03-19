@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "auto-worktree",
-      "source": ".",
+      "source": "./",
       "description": "Automatically creates git worktrees when Claude modifies files, enabling safe parallel work without git conflicts.",
       "version": "0.1.0",
       "license": "MIT"
