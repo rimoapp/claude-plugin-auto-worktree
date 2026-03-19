@@ -18,14 +18,28 @@ Each Claude session gets its own isolated worktree and branch, so parallel sessi
 
 ## Installation
 
-```bash
-claude --plugin-dir /path/to/claude-plugin-auto-worktree
+### From GitHub (recommended)
+
+In Claude Code, run:
+
+```
+/plugin marketplace add github:rimoapp/claude-plugin-auto-worktree
+/plugin install auto-worktree@rimoapp-plugins
 ```
 
-For example, if you cloned this repo to `~/plugins/claude-plugin-auto-worktree`:
+Once installed, the plugin persists across sessions. You can enable/disable it anytime:
+
+```
+/plugin disable auto-worktree@rimoapp-plugins
+/plugin enable auto-worktree@rimoapp-plugins
+```
+
+### From local directory
+
+For development or testing:
 
 ```bash
-claude --plugin-dir ~/plugins/claude-plugin-auto-worktree
+claude --plugin-dir /path/to/claude-plugin-auto-worktree
 ```
 
 ## How It Works

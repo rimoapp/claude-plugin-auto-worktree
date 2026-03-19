@@ -1,0 +1,15 @@
+{
+  "name": "rimoapp-plugins",
+  "owner": {
+    "name": "rimoapp"
+  },
+  "plugins": [
+    {
+      "name": "auto-worktree",
+      "source": ".",
+      "description": "Automatically creates git worktrees when Claude modifies files, enabling safe parallel work without git conflicts.",
+      "version": "0.1.0",
+      "license": "MIT"
+    }
+  ]
+}
