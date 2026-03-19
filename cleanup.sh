@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-BRANCH_PREFIX="worktree/"
+BRANCH_PREFIX="worktree-"
 
 usage() {
   echo "Usage: $(basename "$0") [OPTIONS]"

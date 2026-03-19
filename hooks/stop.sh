@@ -25,6 +25,13 @@ main() {
   local input
   input="$(cat)"
 
+  # Prevent infinite loops: if stop hook already triggered a continuation, bail out
+  local stop_hook_active
+  stop_hook_active="$(parse_json_field "$input" '.stop_hook_active')"
+  if [[ "$stop_hook_active" == "true" ]]; then
+    exit 0
+  fi
+
   local cwd
   cwd="$(parse_json_field "$input" '.cwd')"
 

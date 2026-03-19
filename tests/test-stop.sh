@@ -65,6 +65,16 @@ git -C "$WT_PATH" add newfile.txt &>/dev/null
 output="$(echo '{"cwd":"'"${WT_PATH}"'"}' | bash "$HOOK" 2>&1)" || true
 assert_contains "$output" "Uncommitted changes" "Uncommitted changes warning"
 
+# --- Test 4: stop_hook_active=true → silent exit 0 (no infinite loop) ---
+exit_code=0
+output="$(echo '{"cwd":"'"${WT_PATH}"'","stop_hook_active":true}' | bash "$HOOK" 2>&1)" || exit_code=$?
+if [[ "$exit_code" -eq 0 && -z "$output" ]]; then
+  PASS=$((PASS + 1))
+else
+  FAIL=$((FAIL + 1))
+  echo "FAIL: stop_hook_active=true should be silent exit 0" >&2
+fi
+
 # --- Cleanup ---
 git -C "$REPO_DIR" worktree remove "$WT_PATH" --force 2>/dev/null || true
 
