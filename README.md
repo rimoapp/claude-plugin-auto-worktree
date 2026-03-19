@@ -106,6 +106,7 @@ git worktree prune         # Clean up stale references
 ```
 claude-plugin-auto-worktree/
 ├── .claude-plugin/
+│   ├── marketplace.json     # Marketplace definition
 │   └── plugin.json          # Plugin manifest
 ├── hooks/
 │   ├── hooks.json           # Hook definitions
