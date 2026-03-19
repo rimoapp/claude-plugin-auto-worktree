@@ -94,6 +94,43 @@ rmdir "$NON_GIT_DIR"
 result="$(run_hook "{}")"
 assert_exit_code 0 "$result" "Empty JSON should exit 0 (fail open)"
 
+# --- Test 10: Edit tool in worktree → exit 0 ---
+result="$(run_hook "{\"session_id\":\"${SESSION}-10\",\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"test.txt\"},\"cwd\":\"${WORKTREE_DIR}\"}")"
+assert_exit_code 0 "$result" "Edit in worktree should exit 0"
+
+# --- Test 11: Bash git status (read-only) in main repo → exit 0 ---
+result="$(run_hook "{\"session_id\":\"${SESSION}-11\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git status\"},\"cwd\":\"${REPO_DIR}\"}")"
+assert_exit_code 0 "$result" "Bash git status in main repo should exit 0"
+
+# --- Test 12: Bash git commit (mutating) in main repo → exit 2 ---
+result="$(run_hook "{\"session_id\":\"${SESSION}-12\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git commit -m 'test'\"},\"cwd\":\"${REPO_DIR}\"}")"
+assert_exit_code 2 "$result" "Bash git commit in main repo should exit 2"
+
+# --- Test 13: Write in subdirectory of main repo → exit 2 ---
+SUBDIR="${REPO_DIR}/subdir"
+mkdir -p "$SUBDIR"
+result="$(run_hook "{\"session_id\":\"${SESSION}-13\",\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"test.txt\"},\"cwd\":\"${SUBDIR}\"}")"
+assert_exit_code 2 "$result" "Write in subdirectory of main repo should exit 2"
+
+# --- Test 14: Write in subdirectory of worktree → exit 0 ---
+WT_SUBDIR="${WORKTREE_DIR}/subdir"
+mkdir -p "$WT_SUBDIR"
+result="$(run_hook "{\"session_id\":\"${SESSION}-14\",\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"test.txt\"},\"cwd\":\"${WT_SUBDIR}\"}")"
+assert_exit_code 0 "$result" "Write in subdirectory of worktree should exit 0"
+
+# --- Test 15: Bash empty command in main repo → exit 2 (not proven read-only) ---
+result="$(run_hook "{\"session_id\":\"${SESSION}-15\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"\"},\"cwd\":\"${REPO_DIR}\"}")"
+assert_exit_code 2 "$result" "Bash empty command should exit 2"
+
+# --- Test 16: Stderr mentions 'main repository' ---
+stderr_output="$(run_hook_stderr "{\"session_id\":\"${SESSION}-16\",\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"test.txt\"},\"cwd\":\"${REPO_DIR}\"}")"
+if echo "$stderr_output" | grep -q "main repository"; then
+  PASS=$((PASS + 1))
+else
+  FAIL=$((FAIL + 1))
+  echo "FAIL: stderr should mention 'main repository'" >&2
+fi
+
 # --- Cleanup ---
 git -C "$REPO_DIR" worktree remove "$WORKTREE_DIR" 2>/dev/null || true
 

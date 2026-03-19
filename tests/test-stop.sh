@@ -75,6 +75,36 @@ else
   echo "FAIL: stop_hook_active=true should be silent exit 0" >&2
 fi
 
+# --- Test 5: Worktree path shown in summary ---
+output="$(echo '{"cwd":"'"${WT_PATH}"'"}' | bash "$HOOK" 2>&1)" || true
+assert_contains "$output" "$WT_PATH" "Worktree path in summary"
+
+# --- Test 6: Empty JSON → silent exit 0 ---
+exit_code=0
+output="$(echo '{}' | bash "$HOOK" 2>&1)" || exit_code=$?
+if [[ "$exit_code" -eq 0 && -z "$output" ]]; then
+  PASS=$((PASS + 1))
+else
+  FAIL=$((FAIL + 1))
+  echo "FAIL: empty JSON should be silent exit 0" >&2
+fi
+
+# --- Test 7: Non-git directory → silent exit 0 ---
+NON_GIT_DIR="$(mktemp -d)"
+exit_code=0
+output="$(echo '{"cwd":"'"${NON_GIT_DIR}"'"}' | bash "$HOOK" 2>&1)" || exit_code=$?
+if [[ "$exit_code" -eq 0 && -z "$output" ]]; then
+  PASS=$((PASS + 1))
+else
+  FAIL=$((FAIL + 1))
+  echo "FAIL: non-git dir should be silent exit 0" >&2
+fi
+rmdir "$NON_GIT_DIR"
+
+# --- Test 8: Summary footer separator ---
+output="$(echo '{"cwd":"'"${WT_PATH}"'"}' | bash "$HOOK" 2>&1)" || true
+assert_contains "$output" "======" "Summary footer separator"
+
 # --- Cleanup ---
 git -C "$REPO_DIR" worktree remove "$WT_PATH" --force 2>/dev/null || true
 

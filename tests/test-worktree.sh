@@ -55,6 +55,21 @@ WT_PATH="${TEMP_DIR}/test-worktree"
 git worktree add "$WT_PATH" -b "test-branch" &>/dev/null
 assert_true "is_inside_worktree in worktree" is_inside_worktree "$WT_PATH"
 
+# --- Test subdirectory of main repo ---
+SUBDIR="${REPO_DIR}/subdir"
+mkdir -p "$SUBDIR"
+assert_true "is_git_repo in repo subdir" is_git_repo "$SUBDIR"
+assert_false "not inside worktree in repo subdir" is_inside_worktree "$SUBDIR"
+
+# --- Test subdirectory of worktree ---
+WT_SUBDIR="${WT_PATH}/deep/nested"
+mkdir -p "$WT_SUBDIR"
+assert_true "is_git_repo in worktree subdir" is_git_repo "$WT_SUBDIR"
+assert_true "is_inside_worktree in worktree subdir" is_inside_worktree "$WT_SUBDIR"
+
+# --- Test non-existent directory ---
+assert_false "is_git_repo for non-existent dir" is_git_repo "/tmp/does-not-exist-$$"
+
 # --- Cleanup ---
 git -C "$REPO_DIR" worktree remove "$WT_PATH" 2>/dev/null || true
 
