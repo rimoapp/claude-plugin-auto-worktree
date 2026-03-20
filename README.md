@@ -23,7 +23,7 @@ Each Claude session gets its own isolated worktree and branch, so parallel sessi
 In Claude Code, run:
 
 ```
-/plugin marketplace add github:rimoapp/claude-plugin-auto-worktree
+/plugin marketplace add rimoapp/claude-plugin-auto-worktree
 /plugin install auto-worktree@rimoapp-plugins
 ```
 
