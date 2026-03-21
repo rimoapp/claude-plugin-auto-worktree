@@ -55,8 +55,28 @@ WT_PATH="${TEMP_DIR}/test-worktree"
 git worktree add "$WT_PATH" -b "test-branch" &>/dev/null
 assert_true "is_inside_worktree in worktree" is_inside_worktree "$WT_PATH"
 
-# --- Cleanup ---
+# --- Cleanup worktree ---
 git -C "$REPO_DIR" worktree remove "$WT_PATH" 2>/dev/null || true
+
+# --- Test is_outside_repo_or_ignored ---
+
+# Outside repo → true
+OUTSIDE_DIR="$(mktemp -d)"
+assert_true "outside repo is detected" is_outside_repo_or_ignored "$REPO_DIR" "${OUTSIDE_DIR}/file.txt"
+rmdir "$OUTSIDE_DIR"
+
+# Inside repo, not ignored → false
+assert_false "non-ignored repo file" is_outside_repo_or_ignored "$REPO_DIR" "${REPO_DIR}/src/main.py"
+
+# Gitignored file → true
+echo "*.log" > "${REPO_DIR}/.gitignore"
+git -C "$REPO_DIR" add .gitignore &>/dev/null
+git -C "$REPO_DIR" commit -m "add gitignore" &>/dev/null
+touch "${REPO_DIR}/debug.log"
+assert_true "gitignored file" is_outside_repo_or_ignored "$REPO_DIR" "${REPO_DIR}/debug.log"
+
+# Non-ignored file in same repo → false
+assert_false "non-ignored file in repo" is_outside_repo_or_ignored "$REPO_DIR" "${REPO_DIR}/README.md"
 
 echo "${PASS} passed, ${FAIL} failed"
 if [[ $FAIL -gt 0 ]]; then exit 1; fi
