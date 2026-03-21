@@ -30,3 +30,48 @@ is_git_repo() {
   local dir="$1"
   git -C "$dir" rev-parse --is-inside-work-tree &>/dev/null
 }
+
+# Check if a file path is outside the git repo or gitignored.
+# Arguments: $1 = repo directory, $2 = file path
+# Returns: 0 if the file is outside the repo root or gitignored, 1 otherwise.
+is_outside_repo_or_ignored() {
+  local dir="$1"
+  local file_path="$2"
+
+  local repo_root
+  repo_root="$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null)" || return 1
+
+  # If file_path is relative, treat it as relative to dir
+  if [[ "$file_path" != /* ]]; then
+    file_path="${dir}/${file_path}"
+  fi
+
+  # Resolve symlinks for consistent comparison (macOS: /var → /private/var)
+  if command -v realpath &>/dev/null; then
+    repo_root="$(realpath "$repo_root")"
+    # Walk up to find the nearest existing ancestor to resolve symlinks
+    local resolve_path="$file_path"
+    local suffix=""
+    while [[ ! -e "$resolve_path" ]] && [[ "$resolve_path" != "/" ]]; do
+      suffix="/$(basename "$resolve_path")${suffix}"
+      resolve_path="$(dirname "$resolve_path")"
+    done
+    if [[ -e "$resolve_path" ]]; then
+      file_path="$(realpath "$resolve_path")${suffix}"
+    fi
+  fi
+
+  # Check if file is outside the repo root
+  case "$file_path" in
+    "${repo_root}/"*) ;;  # inside repo, continue checks
+    "${repo_root}")   return 1 ;;  # the repo root itself
+    *)                return 0 ;;  # outside repo
+  esac
+
+  # Check if file is gitignored (low-cost: single git command)
+  if git -C "$repo_root" check-ignore -q "$file_path" 2>/dev/null; then
+    return 0
+  fi
+
+  return 1
+}
