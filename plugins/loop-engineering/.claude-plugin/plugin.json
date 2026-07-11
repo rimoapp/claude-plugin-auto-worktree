@@ -1,0 +1,21 @@
+{
+  "name": "loop-engineering",
+  "displayName": "Loop Engineering",
+  "version": "0.1.0",
+  "description": "Fire /loop-engineering:init in any repository to scaffold a complete self-running agent loop — state file, scheduled discovery & triage, worktree-isolated builder, adversarial verifier, and persistence — based on Addy Osmani's 'Loop Engineering' architecture (5 primitives + memory).",
+  "author": {
+    "name": "Rimo",
+    "email": "support@rimo.app",
+    "url": "https://rimo.app"
+  },
+  "homepage": "https://addyosmani.com/blog/loop-engineering/",
+  "repository": "https://github.com/rimo/claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "loop-engineering",
+    "automation",
+    "agents",
+    "scaffolding",
+    "ci"
+  ]
+}

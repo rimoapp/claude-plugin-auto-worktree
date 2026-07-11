@@ -33,6 +33,15 @@
       "tags": ["rimo-voice", "mcp"]
     },
     {
+      "name": "loop-engineering",
+      "source": "./plugins/loop-engineering",
+      "description": "Scaffold a self-running agent loop (discover → isolate → build → verify → persist → schedule) into the current repository with /loop-engineering:init. Based on Addy Osmani's 'Loop Engineering' architecture.",
+      "homepage": "https://addyosmani.com/blog/loop-engineering/",
+      "license": "MIT",
+      "category": "dev",
+      "tags": ["automation", "agents", "scaffolding", "ci"]
+    },
+    {
       "name": "rimo-all",
       "source": "./plugins/rimo-all",
       "description": "Installs all Rimo plugins together (auto-worktree + dispatch). A convenience bundle.",
